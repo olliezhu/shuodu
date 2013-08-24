@@ -16,12 +16,25 @@
 
 static void finish(int sig);
 static void draw_grid(void);
+void set_cell(int, int);
+int handle_ch(int);
+int gy = 1, gx = 1;
 
 /*
  * Grid things
  */
 
 int grid[9][9] = { 0 };
+
+void
+set_cell(int row, int col)
+{
+    int y, x;
+
+    y = 2 * row - 1;
+    x = 4 * col - 2;
+    move(y, x);
+}
 
 void
 printgrid(void)
@@ -45,14 +58,39 @@ printgrid(void)
 }
 
 int
+handle_ch(int c)
+{
+    switch (c) {
+    case 'h':
+        set_cell(gy, --gx);
+        break;
+    case 'j':
+        set_cell(++gy, gx);
+        break;
+    case 'k':
+        set_cell(--gy, gx);
+        break;
+    case 'l':
+        set_cell(gy, ++gx);
+        break;
+    default:
+        if (c >= '1' && c <= '9') {
+            echochar(c);
+            set_cell(gy, gx);
+        }
+        break;
+    }
+}
+
+int
 main(int argc, char *argv[])
 {
     int num = 0;
 
     /* initialize your non-curses data structures here */
-    printgrid();
+    //printgrid();
 
-#if 0
+#if 1
     (void) signal(SIGINT, finish);      /* arrange interrupts to terminate */
 
     initscr();      /* initialize the curses library */
@@ -61,7 +99,11 @@ main(int argc, char *argv[])
     keypad(stdscr, TRUE);  /* enable keyboard mapping */
     (void) nonl();         /* tell curses not to do NL->CR/NL on output */
     (void) cbreak();       /* take input chars one at a time, no wait for \n */
+#if 0
     (void) echo();         /* echo input - in color */
+#else
+    (void) noecho();
+#endif
 
     if (has_colors())
     {
@@ -84,9 +126,12 @@ main(int argc, char *argv[])
     init_pair(8, COLOR_WHITE, COLOR_BLACK);
     bkgd(COLOR_PAIR(8));//wbkgd();
 
+    set_cell(gy, gx);
+
     for (;;)
     {
         int c = getch();     /* refresh, accept single keystroke of input */
+        handle_ch(c);
         attrset(COLOR_PAIR(num % 8));
         num++;
 
