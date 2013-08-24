@@ -5,6 +5,7 @@
  * http://www.writeka.com/ed/ncurses_library.html
  * tint
  */
+#include <stdio.h>
 #include <stdlib.h>
 #include <curses.h>
 #include <signal.h>
@@ -16,13 +17,42 @@
 static void finish(int sig);
 static void draw_grid(void);
 
+/*
+ * Grid things
+ */
+
+int grid[9][9] = { 0 };
+
+void
+printgrid(void)
+{
+    int i, j;
+    for (i = 0; i < 9; i++) {
+        if (i && i % 3 == 0) {
+            printf(" ---------------------\n");
+        }
+        for (j = 0; j < 9; j++) {
+            if (j && j % 3 == 0)
+                printf(" |");
+            if (grid[i][j] > 0 && grid[i][j] <= 9) {
+                printf(" %d", grid[i][j]);
+            } else {
+                printf("  ");
+            }
+        }
+        printf("\n");
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
     int num = 0;
 
     /* initialize your non-curses data structures here */
+    printgrid();
 
+#if 0
     (void) signal(SIGINT, finish);      /* arrange interrupts to terminate */
 
     initscr();      /* initialize the curses library */
@@ -64,12 +94,12 @@ main(int argc, char *argv[])
     }
 
     finish(0);               /* we're done */
+#endif
 }
 
 static void
 draw_grid(void)
 {
-    static const char regionrow[] = " | | ";
     char a[] = "   |   |   ";
     char b[] = "---|---|---";
     int r = 0, row;
@@ -120,3 +150,4 @@ static void finish(int sig)
 
     exit(0);
 }
+
