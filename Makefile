@@ -3,7 +3,7 @@ CFLAGS=-lncurses
 
 all: sudoku
 
-sudoku: shuodu.c
+sudoku: shuodu.c grid.c
 	$(CC) -o sudoku shuodu.c $(CFLAGS) 
 
 clean:
