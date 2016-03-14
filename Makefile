@@ -1,10 +1,10 @@
 CC=gcc
-CFLAGS=-lncurses
+CFLAGS=-lncurses -std=c11
 
-all: sudoku
+all: shuodu
 
-sudoku: shuodu.c grid.c
-	$(CC) -o sudoku shuodu.c $(CFLAGS) 
+shuodu: shuodu.c grid.c
+	$(CC) -o shuodu shuodu.c $(CFLAGS) 
 
 clean:
-	rm sudoku
+	rm shuodu
