@@ -1,8 +1,5 @@
-/*
- * shuodu, a terminal-based Sudoku game and solver
- * with ncurses
- * http://invisible-island.net/ncurses/ncurses-intro.html
- * http://www.writeka.com/ed/ncurses_library.html
+/**
+ * shuodu, a terminal-based Sudoku game and solver with ncurses
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,7 +20,10 @@ int handle_ch(int);
 int gy = 1, gx = 1;
 
 long int difficulty = -1;
+#define MIN_DIFFICULTY  0
 #define MAX_DIFFICULTY  4
+
+#define BUF_LEN         64
 
 /*
  * Grid things
@@ -195,11 +195,26 @@ parse_options(int argc, char *argv[])
                 exit(EXIT_FAILURE);
             }
         } else {
-            fprintf(stderr, "%s: Invalid option `%s'\n", argv[0], argv[i]);
+            fprintf(stderr, "%s: Invalid option `%s'\n", argv[0], option);
             print_usage(stderr);
             exit(EXIT_FAILURE);
         }
     }
+}
+
+static void
+choose_difficulty(void)
+{
+    char buf[BUF_LEN];
+    char ch;
+
+    do {
+        //while ((ch = getchar()/*fgetc(stdin)*/) != '\n' && ch != EOF);
+        fprintf(stdout, "Choose a difficulty level [1-4]: ");
+        fgets(buf, BUF_LEN - 1, stdin);
+        //buf[strlen(buf) - 1] = '\0';
+        buf[strnlen(buf) - 1, BUF_LEN] = '\0';
+    } while (parse_difficulty(buf));
 }
 
 //#define CURSES
@@ -207,7 +222,9 @@ int
 main(int argc, char *argv[])
 {
     parse_options(argc, argv);
-    //printf("shuodu hello world argc %d argv %p\n", argc, argv);
+    if (difficulty < MIN_DIFFICULTY) {
+        choose_difficulty();
+    }
 
     return 0;
 

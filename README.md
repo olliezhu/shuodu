@@ -3,7 +3,7 @@ shuodu
 
 数独 (shuodu), a discreet Sudoku player and solver in the terminal.
 
-To compile, install libncurses. For example, `apt-get install libncurses-dev`
+Building shuodu requires libncurses (`apt-get install libncurses-dev`).
 
 Acknowledgements and notes:
 * [tint](https://packages.debian.org/source/jessie/tint)
