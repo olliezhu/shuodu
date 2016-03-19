@@ -206,14 +206,14 @@ static void
 choose_difficulty(void)
 {
     char buf[BUF_LEN];
-    char ch;
 
     do {
-        //while ((ch = getchar()/*fgetc(stdin)*/) != '\n' && ch != EOF);
+        /* TODO clear buf for each iteration
+         * while ((ch = getchar()) != '\n' && ch != EOF);
+         */
         fprintf(stdout, "Choose a difficulty level [1-4]: ");
         fgets(buf, BUF_LEN - 1, stdin);
-        //buf[strlen(buf) - 1] = '\0';
-        buf[strnlen(buf) - 1, BUF_LEN] = '\0';
+        buf[strnlen(buf, BUF_LEN) - 1] = '\0';
     } while (parse_difficulty(buf));
 }
 
