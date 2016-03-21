@@ -18,3 +18,7 @@ Acknowledgements and notes:
 * http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/
 * http://invisible-island.net/ncurses/ncurses-intro.html
 * http://www.writeka.com/ed/ncurses_library.html
+
+* http://zhangroup.aporc.org/images/files/Paper_3485.pdf
+* http://arxiv.org/pdf/1312.0192.pdf
+* https://stackoverflow.com/questions/6924216/how-to-generate-sudoku-boards-with-unique-solutions
