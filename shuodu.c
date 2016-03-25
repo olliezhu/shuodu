@@ -42,7 +42,7 @@ set_cell(int row, int col)
 }
 
 void
-printgrid(void)
+print_grid(void)
 {
     int i, j;
     for (i = 0; i < 9; i++) {
@@ -59,6 +59,33 @@ printgrid(void)
             }
         }
         printf("\n");
+    }
+}
+
+long int
+random_in_range(int range) {
+    unsigned long int num_bins = (unsigned long) range + 1;
+    unsigned long int num_rand = (unsigned long) RAND_MAX + 1;
+    unsigned long int bin_size = num_rand / num_bins;
+    unsigned long int defect   = num_rand % num_bins;
+
+    long int x;
+    do {
+        x = random();
+    }
+
+    while (num_rand - defect <= (unsigned long)x);
+
+    return x/bin_size;
+}
+
+void
+calculate_puzzle(void)
+{
+    for (int m = 0; m < 9; m++) {
+        for (int n = 0; n < 9; n++) {
+            grid[m][n] = (int)random_in_range(9);
+        }
     }
 }
 
@@ -226,6 +253,8 @@ main(int argc, char *argv[])
         choose_difficulty();
     }
 
+    calculate_puzzle();
+    print_grid();
     return 0;
 
 #ifdef CURSES
