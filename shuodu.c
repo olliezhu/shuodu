@@ -62,21 +62,21 @@ print_grid(void)
     }
 }
 
+/* return integer between 1 and range, inclusive */
 long int
 random_in_range(int range) {
-    unsigned long int num_bins = (unsigned long) range + 1;
-    unsigned long int num_rand = (unsigned long) RAND_MAX + 1;
+    unsigned long int num_bins = (unsigned long)range;
+    unsigned long int num_rand = (unsigned long)RAND_MAX + 1;
     unsigned long int bin_size = num_rand / num_bins;
-    unsigned long int defect   = num_rand % num_bins;
+    unsigned long int defect = num_rand % num_bins;
 
     long int x;
+
     do {
         x = random();
-    }
+    } while (num_rand - defect <= (unsigned long)x);
 
-    while (num_rand - defect <= (unsigned long)x);
-
-    return x/bin_size;
+    return (int)((x / bin_size) + 1);
 }
 
 void
