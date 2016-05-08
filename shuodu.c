@@ -1,3 +1,5 @@
+//#define CURSES
+
 /**
  * shuodu, a terminal-based Sudoku game and solver with ncurses
  */
@@ -62,6 +64,17 @@ print_grid(void)
     }
 }
 
+int
+insert_cell(int row, int col, int ans)
+{
+    //check_block(row, col, ans);
+    //check_row(row, col, ans);
+    //check_col(row, col, ans);
+    grid[row][col] = ans;
+
+    return 0;
+}
+
 /* return integer between 1 and range, inclusive */
 long int
 random_in_range(int range) {
@@ -80,13 +93,23 @@ random_in_range(int range) {
 }
 
 void
-calculate_puzzle(void)
+calculate_grid_backtrack(void)
 {
+    int next_cell;
+
     for (int m = 0; m < 9; m++) {
         for (int n = 0; n < 9; n++) {
-            grid[m][n] = (int)random_in_range(9);
+            next_cell = (int)random_in_range(9);
+            insert_cell(m, n, next_cell);
+            //grid[m][n] = (int)random_in_range(9);
         }
     }
+}
+
+void
+calculate_grid(void)
+{
+    calculate_grid_backtrack();
 }
 
 int
@@ -244,7 +267,6 @@ choose_difficulty(void)
     } while (parse_difficulty(buf));
 }
 
-//#define CURSES
 int
 main(int argc, char *argv[])
 {
@@ -253,7 +275,7 @@ main(int argc, char *argv[])
         choose_difficulty();
     }
 
-    calculate_puzzle();
+    calculate_grid();
     print_grid();
     return 0;
 
