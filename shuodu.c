@@ -11,6 +11,8 @@
 #include <curses.h>
 #include <signal.h>
 
+#include <curl/curl.h>
+
 #define CELL_WIDTH 3
 #define BOX_WIDTH (3*CELL_WIDTH + 2)    /* 11 */
 #define GRID_WIDTH (3*BOX_WIDTH + 2)    /* 35 */
@@ -106,10 +108,34 @@ calculate_grid_backtrack(void)
     }
 }
 
-void
-calculate_grid(void)
+int
+get_sudoku()
 {
-    calculate_grid_backtrack();
+    CURL *curl;
+    CURLcode res;
+
+    curl = curl_easy_init();
+    if (curl) {
+        //http://view.websudoku.com/?level=3&set_id=8542113115 for example
+        curl_easy_setopt(curl, CURLOPT_URL, "http://view.websudoku.com/");
+        //curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+        res = curl_easy_perform(curl);
+        if (res != CURLE_OK) {
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        }
+        
+        curl_easy_cleanup(curl);
+    }
+
+    return 0;
+}
+
+void
+calculate_sudoku(void)
+{
+    get_sudoku();
+    //calculate_grid_backtrack();
 }
 
 int
@@ -275,7 +301,7 @@ main(int argc, char *argv[])
         choose_difficulty();
     }
 
-    calculate_grid();
+    calculate_sudoku();
     print_grid();
     return 0;
 
