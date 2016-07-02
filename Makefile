@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-std=c11 -lncurses -D_GNU_SOURCE -lcurl
+CFLAGS=-std=c11 -D_GNU_SOURCE -lncurses -lcurl #-DCURSED
 
 all: shuodu
 

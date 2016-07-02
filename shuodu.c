@@ -1,5 +1,3 @@
-//#define CURSES
-
 /**
  * shuodu, a terminal-based Sudoku game and solver with ncurses
  */
@@ -67,6 +65,7 @@ get_sudoku()
     int w_c;
     int count = 0;
 
+    return 1;
     if (!(curl = curl_easy_init())) {
         fprintf(stderr, "curl_easy_init failed\n");
         return 1;
@@ -214,9 +213,10 @@ main(int argc, char *argv[])
     print_grid();
     return 0;
 
-#ifdef CURSES
+#ifdef CURSED
     int num = 0;
 
+    printf("fuck\n");
     /* initialize your non-curses data structures here */
     //printgrid();
 
@@ -267,6 +267,6 @@ main(int argc, char *argv[])
     }
 
     finish(0);               /* we're done */
-#endif /* CURSES */
+#endif /* CURSED */
 }
 
