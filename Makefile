@@ -3,8 +3,8 @@ CFLAGS=-std=c11 -lncurses -D_GNU_SOURCE -lcurl
 
 all: shuodu
 
-shuodu: shuodu.c grid.c
-	$(CC) -o shuodu shuodu.c $(CFLAGS) 
+shuodu: shuodu.c grid.o grid.h
+	$(CC) -o shuodu grid.o shuodu.c $(CFLAGS)
 
 clean:
-	rm shuodu
+	rm grid.o shuodu

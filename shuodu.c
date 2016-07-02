@@ -8,74 +8,21 @@
 #include <limits.h>
 #include <errno.h>
 #include <string.h>
+
 #include <curses.h>
 #include <signal.h>
-
 #include <curl/curl.h>
 
-#define CELL_WIDTH 3
-#define BOX_WIDTH (3*CELL_WIDTH + 2)    /* 11 */
-#define GRID_WIDTH (3*BOX_WIDTH + 2)    /* 35 */
+#include "grid.h"
 
-static void finish(int sig);
-static void draw_grid(void);
-void set_cell(int, int);
-int handle_ch(int);
-int gy = 1, gx = 1;
 
 long int difficulty = -1;
+
 #define MIN_DIFFICULTY  0
 #define MAX_DIFFICULTY  4
 
 #define BUF_LEN         64
 
-/*
- * Grid things
- */
-
-int grid[9][9] = { 0 };
-
-void
-set_cell(int row, int col)
-{
-    int y, x;
-
-    y = 2 * row - 1;
-    x = 4 * col - 2;
-    move(y, x);
-}
-
-void
-print_grid(void)
-{
-    int i, j;
-    for (i = 0; i < 9; i++) {
-        if (i && i % 3 == 0) {
-            printf(" ---------------------\n");
-        }
-        for (j = 0; j < 9; j++) {
-            if (j && j % 3 == 0)
-                printf(" |");
-            if (grid[i][j] > 0 && grid[i][j] <= 9) {
-                printf(" %d", grid[i][j]);
-            } else {
-                printf("  ");
-            }
-        }
-        printf("\n");
-    }
-}
-
-int
-insert_cell(int row, int col, int ans)
-{
-    //check_block(row, col, ans);
-    //check_row(row, col, ans);
-    //check_col(row, col, ans);
-    grid[row][col] = ans;
-
-    return 0;
-}
 
 /* return integer between 1 and range, inclusive */
 long int
@@ -103,30 +50,72 @@ calculate_grid_backtrack(void)
         for (int n = 0; n < 9; n++) {
             next_cell = (int)random_in_range(9);
             insert_cell(m, n, next_cell);
-            //grid[m][n] = (int)random_in_range(9);
         }
     }
 }
 
+/* download a websudoku puzzle */
 int
 get_sudoku()
 {
     CURL *curl;
     CURLcode res;
+    char fn[] = "ws.html";
+    FILE *f = fopen(fn, "w+");
+    //FILE *f = tmpfile();
+    char str[9999], cheat[82];
+    int w_c;
+    int count = 0;
 
-    curl = curl_easy_init();
-    if (curl) {
-        //http://view.websudoku.com/?level=3&set_id=8542113115 for example
-        curl_easy_setopt(curl, CURLOPT_URL, "http://view.websudoku.com/");
-        //curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-        res = curl_easy_perform(curl);
-        if (res != CURLE_OK) {
-            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-        }
-        
-        curl_easy_cleanup(curl);
+    if (!(curl = curl_easy_init())) {
+        fprintf(stderr, "curl_easy_init failed\n");
+        return 1;
     }
+
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, f);
+    //http://view.websudoku.com/?level=3&set_id=8542113115 for example
+    curl_easy_setopt(curl, CURLOPT_URL, "http://view.websudoku.com/");
+
+    res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    }
+
+#if 0
+    if (f) {
+        printf("hello\n");
+        while (fgetc(f, "%s") != EOF) {
+            printf("%s", str);
+        }
+    }
+    printf("goodbye\n");
+#endif
+    rewind(f);
+    while (fscanf(f,"%s", str) == 2)
+    {
+        printf("%s\n", str);
+    }
+#if 0
+    while (!feof(f)) {
+        fscanf(f, " ");
+        if (fscanf(f, "w_c=%d;", &w_c)) {
+            printf("%d\n", w_c);
+            break;
+        } else {
+            printf("c %d\n", count);
+        }
+        //if (fscanf(f, "            var cheat='%s';", cheat)) {
+            //break;
+        //}
+        count++;
+    }
+    //printf("cheat %s\n", cheat);
+    printf("wc %d\n", w_c);
+    printf("count %d\n", count);
+#endif
+    
+    fclose(f);
+    curl_easy_cleanup(curl);
 
     return 0;
 }
@@ -135,86 +124,6 @@ void
 calculate_sudoku(void)
 {
     get_sudoku();
-    //calculate_grid_backtrack();
-}
-
-int
-handle_ch(int c)
-{
-    switch (c) {
-    case 'h':
-        set_cell(gy, --gx);
-        break;
-    case 'j':
-        set_cell(++gy, gx);
-        break;
-    case 'k':
-        set_cell(--gy, gx);
-        break;
-    case 'l':
-        set_cell(gy, ++gx);
-        break;
-    default:
-        if (c >= '1' && c <= '9') {
-            echochar(c);
-            set_cell(gy, gx);
-        }
-        break;
-    }
-}
-
-static void
-draw_grid(void)
-{
-    char a[] = "   |   |   ";
-    char b[] = "---|---|---";
-    int r = 0, row;
-    int i;
-
-    addch(ACS_ULCORNER);
-    hline(ACS_HLINE, GRID_WIDTH);
-    mvaddch(r, BOX_WIDTH + 1, ACS_TTEE);
-    mvaddch(r, 2*BOX_WIDTH + 2, ACS_TTEE);
-    mvaddch(r, GRID_WIDTH + 1, ACS_URCORNER);
-
-    for (r = 1; r <= 9; r++) {
-        row = 2 * r - 1;
-        mvaddch(row, 0, ACS_VLINE);
-        for (i = 0; i < 3; i++) {
-            printw("%s", a);
-            addch(ACS_VLINE);
-        }
-
-        row++;
-        if (r % 3) {
-            mvaddch(row, 0, ACS_VLINE);
-            for (i = 0; i < 3; i++) {
-                printw("%s", b);
-                addch(ACS_VLINE);
-            }
-        } else if (r < 9) {
-            mvaddch(row, 0, ACS_VLINE);
-            hline(ACS_HLINE, GRID_WIDTH);
-            mvaddch(row, BOX_WIDTH + 1, ACS_PLUS);
-            mvaddch(row, 2*BOX_WIDTH + 2, ACS_PLUS);
-            mvaddch(row, GRID_WIDTH + 1, ACS_VLINE);
-        } else {
-            mvaddch(row, 0, ACS_LLCORNER);
-            hline(ACS_HLINE, GRID_WIDTH);
-            mvaddch(row, BOX_WIDTH + 1, ACS_BTEE);
-            mvaddch(row, 2*BOX_WIDTH + 2, ACS_BTEE);
-            mvaddch(row, GRID_WIDTH + 1, ACS_LRCORNER);
-        }
-    }
-}
-
-static void finish(int sig)
-{
-    endwin();
-
-    /* do your non-curses wrapup here */
-
-    exit(0);
 }
 
 void
@@ -345,7 +254,7 @@ main(int argc, char *argv[])
     init_pair(8, COLOR_WHITE, COLOR_BLACK);
     bkgd(COLOR_PAIR(8));//wbkgd();
 
-    set_cell(gy, gx);
+    set_cell(GY_0, GX_0);
 
     for (;;)
     {
