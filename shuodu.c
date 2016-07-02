@@ -58,22 +58,28 @@ get_sudoku()
 {
     CURL *curl;
     CURLcode res;
-    char fn[] = "ws.html";
-    FILE *f = fopen(fn, "w+");
-    //FILE *f = tmpfile();
+    char url[2084], level[2];
+    char websudoku[] = "http://view.websudoku.com/", level_select[] = "?level=";
+    char fn[] = "ws.html"; /* save in local file for parsing for now */
+    FILE *f = fopen(fn, "w+");//FILE *f = tmpfile();
     char str[9999], cheat[82];
     int w_c;
     int count = 0;
 
-    return 1;
     if (!(curl = curl_easy_init())) {
         fprintf(stderr, "curl_easy_init failed\n");
         return 1;
     }
 
+    /* http://view.websudoku.com/?level=3&set_id=8542113115 for example */
+    strncpy(url, websudoku, sizeof(websudoku));
+    strncat(url, level_select, sizeof(level_select));
+    if (difficulty > MIN_DIFFICULTY && difficulty <= MAX_DIFFICULTY) {
+        sprintf(level, "%d", (int)difficulty);
+        strncat(url, level, sizeof(level));
+    }
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, f);
-    //http://view.websudoku.com/?level=3&set_id=8542113115 for example
-    curl_easy_setopt(curl, CURLOPT_URL, "http://view.websudoku.com/");
+    curl_easy_setopt(curl, CURLOPT_URL, url);
 
     res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
@@ -81,20 +87,11 @@ get_sudoku()
     }
 
 #if 0
-    if (f) {
-        printf("hello\n");
-        while (fgetc(f, "%s") != EOF) {
-            printf("%s", str);
-        }
-    }
-    printf("goodbye\n");
-#endif
     rewind(f);
     while (fscanf(f,"%s", str) == 2)
     {
         printf("%s\n", str);
     }
-#if 0
     while (!feof(f)) {
         fscanf(f, " ");
         if (fscanf(f, "w_c=%d;", &w_c)) {
@@ -108,9 +105,6 @@ get_sudoku()
         //}
         count++;
     }
-    //printf("cheat %s\n", cheat);
-    printf("wc %d\n", w_c);
-    printf("count %d\n", count);
 #endif
     
     fclose(f);
