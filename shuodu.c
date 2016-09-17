@@ -9,6 +9,7 @@
 
 #include <curses.h>
 #include <signal.h>
+#include <tidy/tidy.h>
 #include <curl/curl.h>
 
 #include "grid.h"
