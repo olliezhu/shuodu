@@ -20,6 +20,8 @@ Acknowledgements and notes:
 * http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/
 * http://invisible-island.net/ncurses/ncurses-intro.html
 * http://www.writeka.com/ed/ncurses_library.html
+* http://api.html-tidy.org/tidy/tidylib_api_5.2.0/tidylib.html
+* https://curl.haxx.se/libcurl/c/htmltidy.html
 
 * http://zhangroup.aporc.org/images/files/Paper_3485.pdf
 * http://arxiv.org/pdf/1312.0192.pdf
