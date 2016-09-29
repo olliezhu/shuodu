@@ -10,6 +10,7 @@
 #include <curses.h>
 #include <signal.h>
 #include <tidy/tidy.h>
+#include <tidy/buffio.h>
 #include <curl/curl.h>
 
 #include "grid.h"
@@ -53,6 +54,15 @@ calculate_grid_backtrack(void)
     }
 }
 
+/* curl write callback, to fill tidy's input buffer...  TODO */
+uint write_cb(char *in, uint size, uint nmemb, TidyBuffer *out)
+{
+	uint r;
+	r = size * nmemb;
+	tidyBufAppend(out, in, r);
+	return r;
+}
+
 /* download a websudoku puzzle */
 int
 get_sudoku()
@@ -61,53 +71,73 @@ get_sudoku()
     CURLcode res;
     char url[2084], level[2];
     char websudoku[] = "http://view.websudoku.com/", level_select[] = "?level=";
-    char fn[] = "ws.html"; /* save in local file for parsing for now */
+    char fn[] = "ws.html"; /* save in local file for parsing for now TODO */
     FILE *f = fopen(fn, "w+");//FILE *f = tmpfile();
     char str[9999], cheat[82];
     int w_c;
-    int count = 0;
+    int count = 0, err;
+
+    TidyBuffer docbuf = { 0 };
+    TidyBuffer errbuf = { 0 };
+
+    TidyDoc tdoc = tidyCreate();
+    Bool ok;
+
+	char curl_errbuf[CURL_ERROR_SIZE];
 
     if (!(curl = curl_easy_init())) {
         fprintf(stderr, "curl_easy_init failed\n");
         return 1;
     }
 
-    /* http://view.websudoku.com/?level=3&set_id=8542113115 for example */
+    /* http://view.websudoku.com/?level=<difficulty>&set_id=<id> */
+    /* TODO get random id */
     strncpy(url, websudoku, sizeof(websudoku));
     strncat(url, level_select, sizeof(level_select));
     if (difficulty > MIN_DIFFICULTY && difficulty <= MAX_DIFFICULTY) {
         sprintf(level, "%d", (int)difficulty);
         strncat(url, level, sizeof(level));
     }
+
+    if (!(ok = tidyOptSetBool(tdoc, TidyForceOutput, true))) {
+        fprintf(stderr, "tidyOptSetBool() failed\n");
+        goto finish;
+    }
+    tidyOptSetInt(tdoc, TidyWrapLen, 1048576/*4096*/);
+    tidySetErrorBuffer(tdoc, &errbuf);
+    tidyBufInit(&docbuf);
+
+    curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_errbuf);
+    //curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+    //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    //curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
+
+#if 1
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, f);
+#else
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &docbuf);
+#endif
     curl_easy_setopt(curl, CURLOPT_URL, url);
 
-    res = curl_easy_perform(curl);
-    if (res != CURLE_OK) {
+    if ((res = curl_easy_perform(curl)) != CURLE_OK) {
         fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        goto finish;
     }
 
+    //err = tidyParseBuffer(tdoc, &docbuf/*f*/);
 #if 0
-    rewind(f);
-    while (fscanf(f,"%s", str) == 2)
-    {
-        printf("%s\n", str);
+    if (err >= 0) {
+        err = tidyCleanAndRepair(tdoc);
     }
-    while (!feof(f)) {
-        fscanf(f, " ");
-        if (fscanf(f, "w_c=%d;", &w_c)) {
-            printf("%d\n", w_c);
-            break;
-        } else {
-            printf("c %d\n", count);
-        }
-        //if (fscanf(f, "            var cheat='%s';", cheat)) {
-            //break;
-        //}
-        count++;
+    if (err >= 0) {
+        err = tidyRunDiagnostics(tdoc);
+    }
+    if (err >= 0) {
+        fprintf(stdout, "TIDY! ozhu\n");
     }
 #endif
-    
+
+finish:
     fclose(f);
     curl_easy_cleanup(curl);
 
