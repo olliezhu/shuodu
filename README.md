@@ -1,5 +1,4 @@
-shuodu
-===========
+# shuodu
 
 数独 (shuodu), a discreet Sudoku player and solver in the terminal.
 
@@ -7,7 +6,8 @@ Building shuodu requires
 * libncurses (e.g. `apt-get install libncurses-dev`)
 * tidy (e.g. `apt-get install libtidy-0.99-0 libtidy-dev`)
 
-Acknowledgements and notes:
+## Acknowledgements & notes
+
 * [tint](https://packages.debian.org/source/jessie/tint)
 * [netToe](http://nettoe.sourceforge.net/index.php)
 * http://games.slashdot.org/story/12/08/05/1440221/the-chaos-within-sudoku---a-richter-scale-of-difficulty
@@ -24,3 +24,11 @@ Acknowledgements and notes:
 * http://zhangroup.aporc.org/images/files/Paper_3485.pdf
 * http://arxiv.org/pdf/1312.0192.pdf
 * https://stackoverflow.com/questions/6924216/how-to-generate-sudoku-boards-with-unique-solutions
+
+## TODO
+
+* get puzzles
+* design gameplay (vim key bindings)
+* sudoku validator Silberschatz 197?
+* sudoku solver
+* calculate difficulties
