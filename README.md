@@ -34,3 +34,4 @@ Building shuodu requires
 * sudoku validator Silberschatz 197?
 * sudoku solver
 * calculate difficulties
+- https://stackoverflow.com/questions/1527883/parse-html-using-c
